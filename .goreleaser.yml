@@ -1,0 +1,42 @@
+version: 2
+
+builds:
+  - id: claudex
+    main: ./cmd/claudex/
+    binary: claudex
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - windows
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.ShortCommit}}
+      - -X main.date={{.Date}}
+
+archives:
+  - format: tar.gz
+    name_template: "claudex-{{.Os}}-{{.Arch}}"
+    format_overrides:
+      - goos: windows
+        format: zip
+
+release:
+  github:
+    owner: claudex
+    name: claudex-cli
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"

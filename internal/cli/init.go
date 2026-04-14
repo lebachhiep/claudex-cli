@@ -1,0 +1,109 @@
+package cli
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/fatih/color"
+	"github.com/spf13/cobra"
+
+	"github.com/claudex/claudex-cli/internal/auth"
+	"github.com/claudex/claudex-cli/internal/notification"
+	"github.com/claudex/claudex-cli/internal/projects"
+	"github.com/claudex/claudex-cli/internal/rules"
+)
+
+func newInitCmd(cliVersion string) *cobra.Command {
+	var force bool
+	var dir string
+
+	cmd := &cobra.Command{
+		Use:   "init [version]",
+		Short: "Install or update rules in the current project",
+		Long:  "Download and install rules. If already installed, updates to latest or specified version.",
+		Args:  cobra.MaximumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			authData, err := auth.EnsureAuth(apiClient, cfg)
+			if err != nil {
+				return err
+			}
+
+			// Determine target version from args
+			targetVersion := ""
+			if len(args) > 0 {
+				targetVersion = strings.TrimPrefix(args[0], "v")
+			}
+
+			// Detect mode: init (fresh) or update (existing)
+			lock, lockErr := rules.ReadLock(dir)
+			currentVersion := ""
+			mode := rules.ModeInit
+			if lockErr == nil {
+				currentVersion = lock.Version
+				mode = rules.ModeUpdate
+			}
+
+			if force {
+				currentVersion = "" // Force re-download
+			}
+
+			// Download
+			result, err := rules.Download(apiClient, authData, cfg, currentVersion, targetVersion)
+			if err != nil {
+				return fmt.Errorf("download failed: %w", err)
+			}
+
+			green := color.New(color.FgGreen).SprintFunc()
+
+			if result.UpToDate && !force {
+				fmt.Printf("\n  %s Already on latest version (%s)\n\n", green("✓"), lock.Version)
+				return nil
+			}
+
+			// Install
+			stats, err := rules.InstallWithMode(result, authData.Plan, dir, force || mode == rules.ModeInit, cliVersion, mode)
+			if err != nil {
+				return err
+			}
+
+			// Track project
+			store, _ := projects.Load(cfg.ProjectsFile)
+			if store == nil {
+				store = projects.NewStore(cfg.ProjectsFile)
+			}
+			if mode == rules.ModeInit {
+				_ = store.Register(dir, result.Version)
+			} else {
+				_ = store.UpdateVersion(dir, result.Version)
+			}
+			_ = store.Save()
+
+			// Sync global config to project
+			yellow := color.New(color.FgYellow).SprintFunc()
+			if err := rules.SyncCodingLevel(cfg.ConfigFile, dir); err != nil {
+				fmt.Printf("  %s Coding level sync: %s\n", yellow("!"), err)
+			}
+			globalCfg, _ := notification.LoadGlobalConfig(cfg.ConfigFile)
+			if globalCfg != nil && globalCfg.HasNotification() {
+				if err := notification.SyncToPath(globalCfg.Notification, dir); err != nil {
+					fmt.Printf("  %s Notification sync: %s\n", yellow("!"), err)
+				}
+			}
+
+			// Output
+			if mode == rules.ModeUpdate && lockErr == nil {
+				fmt.Printf("\n  %s Updated %s → %s\n", green("✓"), lock.Version, result.Version)
+			} else {
+				fmt.Printf("\n  %s Installed rules %s (%d KB)\n", green("✓"), result.Version, result.SizeBytes/1024)
+			}
+			fmt.Printf("      %d skills, %d agents, %d rules\n", stats.SkillCount, stats.AgentCount, stats.RuleCount)
+			fmt.Printf("  %s Ready! Open Claude Code and use /skill-name to get started.\n\n", green("✓"))
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVar(&force, "force", false, "Force re-download and overwrite")
+	cmd.Flags().StringVar(&dir, "dir", ".", "Target project directory")
+
+	return cmd
+}
