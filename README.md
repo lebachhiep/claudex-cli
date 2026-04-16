@@ -1,219 +1,164 @@
 # ClaudeX CLI
 
-ClaudeX CLI is a secure, cross-platform command-line tool for managing Claude Code skills distribution and license binding. It enables users to authenticate with machine-specific device binding, download rules bundles, and track project installations.
+> 🇻🇳 Tiếng Việt (mặc định) · [🇬🇧 English](README.en.md)
 
-**Version:** 0.1.0 (Beta)  
-**License:** Proprietary  
-**Go Version:** 1.23+
+ClaudeX CLI là công cụ dòng lệnh để tải, cài đặt và quản lý bộ rules / skills / agents của Claude Code — license gắn theo máy, cache offline, đồng bộ đa dự án.
 
-## Quick Start
+**Version:** 0.1.0 (Beta) · **License:** Proprietary · **Go:** 1.23+
 
-### Installation
+---
 
-Download the pre-built binary for your platform from the [releases page](https://github.com/lebachhiep/claudex-cli/releases):
+## Yêu cầu
 
-- **Windows:** `claudex-windows-amd64.exe`
-- **macOS (Intel):** `claudex-darwin-amd64`
-- **macOS (Apple Silicon):** `claudex-darwin-arm64`
-- **Linux:** `claudex-linux-amd64`
+- Go 1.23+ đã cài đặt và `$GOPATH/bin` (hoặc `$HOME/go/bin`) nằm trong `PATH`.
+- Một license key hợp lệ (mua hoặc xin từ đội ClaudeX).
+- Kết nối Internet ở lần đầu cài rules (các lần sau dùng cache local).
 
-Extract the binary and add it to your PATH:
+---
+
+## 1. Cài đặt
+
+Cài trực tiếp từ Go:
 
 ```bash
-# macOS/Linux
-chmod +x claudex
-sudo mv claudex /usr/local/bin/
-
-# Windows
-# Copy claudex-windows-amd64.exe to a directory in PATH (e.g., C:\Program Files\claudex\)
+go install github.com/lebachhiep/claudex-cli/cmd/claudex@latest
 ```
 
-### Authenticate
+Lệnh này build và đặt binary `claudex` vào `$GOPATH/bin`. Đảm bảo thư mục đó nằm trong `PATH`:
+
+```bash
+# macOS / Linux
+export PATH="$PATH:$(go env GOPATH)/bin"
+
+# Windows (PowerShell)
+$env:Path += ";$(go env GOPATH)\bin"
+```
+
+Kiểm tra:
+
+```bash
+claudex version
+```
+
+---
+
+## 2. Đăng nhập
+
+Đăng nhập để gắn license vào máy hiện tại. Bind theo hardware fingerprint (OS + hostname + arch), chặn chia sẻ license sai mục đích, nhưng vẫn cho phép đăng nhập trên nhiều máy nằm trong hạn mức gói.
 
 ```bash
 claudex login --key=YOUR_LICENSE_KEY
 ```
 
-This binds your machine (hardware-specific) to the license. You can authenticate on up to the limit specified in your license tier.
-
-### Install Rules
+Đăng xuất / gỡ bind máy hiện tại:
 
 ```bash
-cd /path/to/your/project
+claudex logout
+```
+
+---
+
+## 3. Khởi tạo dự án
+
+Vào thư mục dự án cần cài rules, chạy `claudex init`. Lệnh này tải bản rules mới nhất, giải nén vào `.claude/`, và tạo `.claudex.lock` để theo dõi phiên bản đã cài.
+
+```bash
+cd your-project
 claudex init
 ```
 
-This downloads and installs the latest rules bundle, creating a `.claudex.lock` file to track the installation.
+Cài một phiên bản cụ thể thay vì bản mới nhất:
 
-### Check Status
+```bash
+claudex init 1.0.5
+```
+
+---
+
+## 4. Bắt đầu
+
+Sau khi init xong, dự án của bạn đã có đầy đủ skills, agents, hooks trong `.claude/`. Mở Claude Code lên là dùng được. Chạy `claudex status` để xem license, machine, và các dự án đã cài rules.
 
 ```bash
 claudex status
 ```
 
-Displays authentication status, plan tier, and installed projects.
+Xem danh sách `CLI reference` bên dưới để biết các lệnh khác.
 
-## Commands
+---
 
-| Command | Purpose |
-|---------|---------|
-| `claudex login --key=<KEY>` | Authenticate with license key and bind machine |
-| `claudex logout` | Unbind machine and remove authentication |
-| `claudex init [version]` | Install or update rules to latest or specified version |
-| `claudex update` | Deprecated; use `init` instead |
-| `claudex status` | Check authentication and project status |
-| `claudex versions` | List available rule bundle versions |
-| `claudex version` | Show CLI version and build info |
-| `claudex notification` | Interactive setup for notifications (Telegram/Discord/Slack) |
+## CLI reference
 
-## Configuration
+Tất cả các lệnh CLI có thể chạy ở terminal (không phải trong Claude Code).
 
-### Environment Variables
+| Lệnh | Mục đích |
+|------|----------|
+| `claudex login --key=<KEY>` | Đăng nhập, gắn máy với license |
+| `claudex logout` | Đăng xuất, gỡ bind máy hiện tại |
+| `claudex init [version]` | Cài / cập nhật rules vào dự án hiện tại |
+| `claudex update` | Kiểm tra rules mới và cập nhật tất cả dự án đã bind |
+| `claudex status` | Xem trạng thái license, máy, rules của các dự án |
+| `claudex versions [current]` | Liệt kê các phiên bản rules có sẵn |
+| `claudex projects` | Liệt kê các dự án đã cài rules, sync lại config |
+| `claudex version` | Xem version, commit, ngày build của CLI |
+| `claudex config` | Mở menu cấu hình (ngôn ngữ, coding level, notification, context7) |
+| `claudex config language` | Đổi ngôn ngữ CLI (English / Tiếng Việt) |
+| `claudex config coding-level` | Đặt coding level (0–3) để điều chỉnh mức giải thích của AI |
+| `claudex config notification` | Cấu hình thông báo Telegram / Discord / Slack |
+| `claudex config context7` | Cấu hình Context7 API key cho docs-seeker |
 
-Override defaults via environment variables:
+---
+
+## Cấu hình
+
+### Biến môi trường
 
 ```bash
-# Custom API server (default: https://api-dev.claudex.info)
+# Custom API server (mặc định: https://api-dev.claudex.info)
 export CLAUDEX_SERVER=https://custom-api.example.com
 
-# Custom data directory (default: ~/.claudex/)
+# Custom data directory (mặc định: ~/.claudex/)
 export CLAUDEX_DATA_DIR=/var/claudex
 ```
 
-### Data Directory
-
-ClaudeX stores configuration and cached data in `~/.claudex/`:
+### Thư mục dữ liệu
 
 ```
 ~/.claudex/
-├── auth.json        # Encrypted session token and machine ID
-├── config.json      # Notification provider configuration
-├── projects.json    # Registry of installed projects
-└── cache/           # Downloaded rule bundle cache
+├── auth.json        # Session token + machine ID (đã mã hóa)
+├── config.json      # Cấu hình notification, language, coding level
+├── projects.json    # Danh sách dự án đã cài rules
+└── cache/           # Cache các bundle rules đã tải
 ```
 
-All configuration files are created with secure permissions (0600 for sensitive files).
+File nhạy cảm dùng quyền `0600`.
 
-## Features
+---
 
-### Machine-Specific Authentication
+## Tính năng chính
 
-Your license is bound to your machine using hardware fingerprinting (OS, hostname, architecture). This prevents license sharing across devices while allowing multi-device support within your license limits.
+- **Machine-specific auth** — license gắn theo hardware fingerprint, chặn share key lung tung, vẫn support nhiều máy trong hạn mức gói.
+- **Offline install** — bundle rules đã tải được cache lại, lần sau cài cùng phiên bản không cần mạng.
+- **Lock file** — `.claudex.lock` ghi version, plan, checksum, ngày cài → biết chính xác dự án đang ở phiên bản nào.
+- **Multi-project sync** — `claudex update` quét mọi dự án đã bind và cập nhật đồng loạt.
+- **Notifications** — Telegram, Discord, hoặc Slack.
+- **i18n** — giao diện CLI English / Tiếng Việt, đổi qua `claudex config language`.
 
-### Offline Installation
+---
 
-Rule bundles are cached locally after download. Reinstalling the same version uses the cache, eliminating the need for network connectivity on subsequent installations.
+## Bảo mật
 
-### Rules Management
+- **Device binding** — machine ID từ hardware, chống nhân bản license.
+- **Encrypted storage** — session token lưu với permission 0600.
+- **HTTPS-only** — toàn bộ giao tiếp API + tải bundle qua HTTPS.
+- **Binary obfuscation** — bản production build qua `garble`, khó reverse.
+- **Integrity check** — bundle verify SHA-256 sau khi tải.
 
-Track installed projects and versions via `.claudex.lock`:
-
-```json
-{
-  "version": "1.0.5",
-  "plan": "pro",
-  "installed_at": "2026-04-13T10:30:00Z",
-  "checksum": "sha256:abc123...",
-  "cli_version": "0.1.0"
-}
-```
-
-### Notifications
-
-Configure alerts via Telegram, Discord, or Slack:
-
-```bash
-claudex notification
-```
-
-Choose your provider and enter credentials. Credentials are stored securely in `~/.claudex/config.json` (0600 permissions).
-
-## Security
-
-- **Device Binding:** Hardware-based machine ID prevents license duplication
-- **Encrypted Storage:** Session tokens stored with secure file permissions (0600)
-- **HTTPS-Only:** All API communication and bundle downloads over HTTPS
-- **Binary Obfuscation:** Production binaries obfuscated with garble to resist reverse engineering
-- **Integrity Checking:** Downloaded bundles verified via SHA-256 checksums
-
-## Development
-
-### Prerequisites
-
-- Go 1.23 or later
-- Make
-- git
-
-### Clone & Setup
-
-```bash
-git clone https://github.com/lebachhiep/claudex-cli.git
-cd claudex-cli
-go mod download
-```
-
-### Build
-
-```bash
-# Development build (fast, symbols included)
-make build
-./dist/claudex version
-
-# Production build (obfuscated)
-make build-prod
-
-# Cross-platform builds
-make build-all
-```
-
-### Test
-
-```bash
-make test
-# or
-go test ./...
-```
-
-### Lint
-
-```bash
-make lint
-# or
-golangci-lint run ./...
-```
-
-## Project Structure
-
-```
-claudex-cli/
-├── cmd/claudex/          # CLI entry point
-├── internal/
-│   ├── api/              # HTTP client and API types
-│   ├── auth/             # Authentication and device binding
-│   ├── cli/              # Command implementations
-│   ├── config/           # Configuration management
-│   ├── crypto/           # Encryption and key derivation
-│   ├── notification/     # Notification provider setup
-│   ├── projects/         # Project registry
-│   └── rules/            # Rules download, extraction, and caching
-├── Makefile              # Build targets
-├── go.mod               # Go module definition
-└── docs/                # Documentation
-```
-
-For detailed architecture and design information, see [System Architecture](docs/system-architecture.md).
-
-## Documentation
-
-- **[Project Overview & PDR](docs/project-overview-pdr.md)** — Vision, requirements, success metrics
-- **[Codebase Summary](docs/codebase-summary.md)** — Directory structure, packages, testing
-- **[Code Standards](docs/code-standards.md)** — Naming conventions, patterns, guidelines
-- **[System Architecture](docs/system-architecture.md)** — Design decisions, data flows, security model
-- **[Project Roadmap](docs/project-roadmap.md)** — Version plans, features, timeline
+---
 
 ## Troubleshooting
 
-### "Not logged in" Error
+### "Not logged in"
 
 ```bash
 claudex login --key=YOUR_LICENSE_KEY
@@ -221,17 +166,17 @@ claudex login --key=YOUR_LICENSE_KEY
 
 ### "Device limit exceeded"
 
-You've bound this license to the maximum number of devices. Unbind another device:
+Đã đạt giới hạn số máy cho license. Gỡ máy cũ:
 
 ```bash
 claudex logout
 ```
 
-Then authenticate on a different machine.
+Rồi đăng nhập ở máy mới.
 
 ### "Cannot reach API server"
 
-Check your internet connection and firewall settings. If using a custom server:
+Check mạng + firewall. Nếu dùng server tùy biến:
 
 ```bash
 CLAUDEX_SERVER=https://your-server claudex status
@@ -239,46 +184,91 @@ CLAUDEX_SERVER=https://your-server claudex status
 
 ### "Bundle integrity check failed"
 
-The downloaded bundle's checksum doesn't match. This may indicate network corruption or tampering. Try again:
+Checksum không khớp — có thể mạng lỗi hoặc bundle bị tamper. Thử lại:
 
 ```bash
 claudex init --force
 ```
 
-## Contributing
+---
 
-Contributions are welcome. Please ensure:
+## Phát triển
 
-1. Code follows the standards in [Code Standards](docs/code-standards.md)
-2. Tests pass: `make test`
-3. Linting passes: `make lint`
-4. Commit messages follow conventional commits format
+### Yêu cầu
+
+- Go 1.23+
+- Make
+- git
+
+### Clone & build
+
+```bash
+git clone https://github.com/lebachhiep/claudex-cli.git
+cd claudex-cli
+go mod download
+
+# Dev build
+make build
+./dist/claudex version
+
+# Production (obfuscated)
+make build-prod
+
+# Cross-platform
+make build-all
+```
+
+### Test & lint
+
+```bash
+make test
+make lint
+```
+
+---
+
+## Project structure
+
+```
+claudex-cli/
+├── cmd/claudex/          # CLI entry point
+├── internal/
+│   ├── api/              # HTTP client + API types
+│   ├── auth/             # Auth + device binding
+│   ├── cli/              # Command implementations
+│   ├── config/           # Config management
+│   ├── crypto/           # Encryption + key derivation
+│   ├── i18n/             # CLI translations
+│   ├── notification/     # Notification providers
+│   ├── projects/         # Project registry
+│   └── rules/            # Rules download / extract / cache
+├── Makefile
+├── go.mod
+└── docs/
+```
+
+Chi tiết kiến trúc xem [System Architecture](docs/system-architecture.md).
+
+---
+
+## Documentation
+
+- [Project Overview & PDR](docs/project-overview-pdr.md)
+- [Codebase Summary](docs/codebase-summary.md)
+- [Code Standards](docs/code-standards.md)
+- [System Architecture](docs/system-architecture.md)
+- [Project Roadmap](docs/project-roadmap.md)
+
+---
 
 ## Support
 
-For issues, questions, or feature requests:
-
 - **GitHub Issues:** [claudex-cli/issues](https://github.com/lebachhiep/claudex-cli/issues)
-- **Documentation:** See [docs/](docs/) directory
+- **Docs:** thư mục [docs/](docs/)
 - **Email:** support@claudex.dev
+
+---
 
 ## License
 
-Proprietary. See LICENSE file for details.
-
-## Changelog
-
-### v0.1.0 (April 2026)
-
-**Initial Release**
-
-- Core authentication with machine-specific device binding
-- Rules bundle download, validation, and extraction
-- Local caching for offline installations
-- `.claudex.lock` file tracking
-- Configuration management (`~/.claudex/`)
-- Notification providers (Telegram, Discord, Slack)
-- Cross-platform support (Windows, macOS, Linux)
-- Binary obfuscation for production builds
-
-For detailed release notes, see [Project Roadmap](docs/project-roadmap.md).
+Proprietary. Xem file `LICENSE`.
