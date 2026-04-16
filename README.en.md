@@ -111,16 +111,6 @@ All CLI commands run in your terminal (not inside Claude Code).
 
 ## Configuration
 
-### Environment variables
-
-```bash
-# Custom API server (default: https://api-dev.claudex.info)
-export CLAUDEX_SERVER=https://custom-api.example.com
-
-# Custom data directory (default: ~/.claudex/)
-export CLAUDEX_DATA_DIR=/var/claudex
-```
-
 ### Data directory
 
 ```
@@ -176,11 +166,7 @@ Then log in on the new machine.
 
 ### "Cannot reach API server"
 
-Check your network + firewall. If you're using a custom server:
-
-```bash
-CLAUDEX_SERVER=https://your-server claudex status
-```
+Check your network + firewall, retry after a few minutes.
 
 ### "Bundle integrity check failed"
 

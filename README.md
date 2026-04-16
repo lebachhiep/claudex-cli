@@ -111,16 +111,6 @@ Tất cả các lệnh CLI có thể chạy ở terminal (không phải trong Cl
 
 ## Cấu hình
 
-### Biến môi trường
-
-```bash
-# Custom API server (mặc định: https://api-dev.claudex.info)
-export CLAUDEX_SERVER=https://custom-api.example.com
-
-# Custom data directory (mặc định: ~/.claudex/)
-export CLAUDEX_DATA_DIR=/var/claudex
-```
-
 ### Thư mục dữ liệu
 
 ```
@@ -176,11 +166,7 @@ Rồi đăng nhập ở máy mới.
 
 ### "Cannot reach API server"
 
-Check mạng + firewall. Nếu dùng server tùy biến:
-
-```bash
-CLAUDEX_SERVER=https://your-server claudex status
-```
+Check mạng + firewall, thử lại sau ít phút.
 
 ### "Bundle integrity check failed"
 
