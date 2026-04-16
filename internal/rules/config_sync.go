@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/claudex/claudex-cli/internal/notification"
+	"github.com/lebachhiep/claudex-cli/internal/notification"
 )
 
 // codingLevelRe matches the codingLevel key-value pair in JSON.

@@ -9,9 +9,9 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 
-	"github.com/claudex/claudex-cli/internal/notification"
-	"github.com/claudex/claudex-cli/internal/projects"
-	"github.com/claudex/claudex-cli/internal/rules"
+	"github.com/lebachhiep/claudex-cli/internal/notification"
+	"github.com/lebachhiep/claudex-cli/internal/projects"
+	"github.com/lebachhiep/claudex-cli/internal/rules"
 )
 
 func newProjectsCmd() *cobra.Command {

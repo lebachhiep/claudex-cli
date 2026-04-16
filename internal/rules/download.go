@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/claudex/claudex-cli/internal/api"
-	"github.com/claudex/claudex-cli/internal/auth"
-	"github.com/claudex/claudex-cli/internal/config"
+	"github.com/lebachhiep/claudex-cli/internal/api"
+	"github.com/lebachhiep/claudex-cli/internal/auth"
+	"github.com/lebachhiep/claudex-cli/internal/config"
 )
 
 // DownloadResult holds the bundle data ready for extraction.

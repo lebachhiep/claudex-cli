@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/claudex/claudex-cli/internal/projects"
+	"github.com/lebachhiep/claudex-cli/internal/projects"
 )
 
 const (

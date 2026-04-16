@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/claudex/claudex-cli/internal/api"
-	"github.com/claudex/claudex-cli/internal/config"
+	"github.com/lebachhiep/claudex-cli/internal/api"
+	"github.com/lebachhiep/claudex-cli/internal/config"
 )
 
 // Login authenticates with the API, binds this machine, and saves auth state.

@@ -10,7 +10,7 @@ ClaudeX CLI is a secure, cross-platform command-line tool for managing Claude Co
 
 ### Installation
 
-Download the pre-built binary for your platform from the [releases page](https://github.com/claudex/claudex-cli/releases):
+Download the pre-built binary for your platform from the [releases page](https://github.com/lebachhiep/claudex-cli/releases):
 
 - **Windows:** `claudex-windows-amd64.exe`
 - **macOS (Intel):** `claudex-darwin-amd64`
@@ -147,7 +147,7 @@ Choose your provider and enter credentials. Credentials are stored securely in `
 ### Clone & Setup
 
 ```bash
-git clone https://github.com/claudex/claudex-cli.git
+git clone https://github.com/lebachhiep/claudex-cli.git
 cd claudex-cli
 go mod download
 ```
@@ -258,7 +258,7 @@ Contributions are welcome. Please ensure:
 
 For issues, questions, or feature requests:
 
-- **GitHub Issues:** [claudex-cli/issues](https://github.com/claudex/claudex-cli/issues)
+- **GitHub Issues:** [claudex-cli/issues](https://github.com/lebachhiep/claudex-cli/issues)
 - **Documentation:** See [docs/](docs/) directory
 - **Email:** support@claudex.dev
 

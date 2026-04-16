@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/claudex/claudex-cli/internal/config"
+	"github.com/lebachhiep/claudex-cli/internal/config"
 )
 
 // TestWriteAndReadLockRoundTrip verifies WriteLock and ReadLock round-trip.

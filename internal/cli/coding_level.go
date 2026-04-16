@@ -8,7 +8,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 
-	"github.com/claudex/claudex-cli/internal/notification"
+	"github.com/lebachhiep/claudex-cli/internal/notification"
 )
 
 func newCodingLevelCmd() *cobra.Command {

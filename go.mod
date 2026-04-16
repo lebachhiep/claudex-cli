@@ -1,4 +1,4 @@
-module github.com/claudex/claudex-cli
+module github.com/lebachhiep/claudex-cli
 
 go 1.23.0
 

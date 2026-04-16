@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/claudex/claudex-cli/internal/config"
+	"github.com/lebachhiep/claudex-cli/internal/config"
 )
 
 // LockData represents the .claudex.lock file in a project directory.

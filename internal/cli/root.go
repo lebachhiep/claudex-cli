@@ -9,8 +9,8 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 
-	"github.com/claudex/claudex-cli/internal/api"
-	"github.com/claudex/claudex-cli/internal/config"
+	"github.com/lebachhiep/claudex-cli/internal/api"
+	"github.com/lebachhiep/claudex-cli/internal/config"
 )
 
 // Shared state initialized in PersistentPreRun, available to all subcommands.

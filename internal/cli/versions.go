@@ -6,8 +6,8 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 
-	"github.com/claudex/claudex-cli/internal/auth"
-	"github.com/claudex/claudex-cli/internal/rules"
+	"github.com/lebachhiep/claudex-cli/internal/auth"
+	"github.com/lebachhiep/claudex-cli/internal/rules"
 )
 
 func newVersionsCmd() *cobra.Command {

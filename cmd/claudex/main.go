@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/claudex/claudex-cli/internal/cli"
+	"github.com/lebachhiep/claudex-cli/internal/cli"
 )
 
 // Injected via ldflags at build time.

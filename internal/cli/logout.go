@@ -6,7 +6,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 
-	"github.com/claudex/claudex-cli/internal/auth"
+	"github.com/lebachhiep/claudex-cli/internal/auth"
 )
 
 func newLogoutCmd() *cobra.Command {
