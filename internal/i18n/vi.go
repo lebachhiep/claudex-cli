@@ -75,6 +75,7 @@ var vi = map[string]string{
 	"config.notification":   "Notification — Cấu hình Telegram/Discord/Slack",
 	"config.context7":       "Context7 — Cấu hình API key cho docs-seeker",
 	"config.language":       "Language — Chọn ngôn ngữ / Select language",
+	"config.exit":           "Thoát",
 
 	// ── notification config ──
 	"notify.status_title":    "Trạng thái Notification",

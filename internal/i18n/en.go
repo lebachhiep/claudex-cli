@@ -75,6 +75,7 @@ var en = map[string]string{
 	"config.notification":   "Notification — Configure Telegram/Discord/Slack",
 	"config.context7":       "Context7 — Configure API key for docs-seeker",
 	"config.language":       "Language — Select language / Chọn ngôn ngữ",
+	"config.exit":           "Exit",
 
 	// ── notification config ──
 	"notify.status_title":    "Notification Status",

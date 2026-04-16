@@ -25,40 +25,51 @@ func newConfigCmd() *cobra.Command {
 				}
 			}
 
-			var choice string
-			err := huh.NewSelect[string]().
-				Title(i18n.T("config.menu_title")).
-				Options(
-					huh.NewOption(i18n.T("config.language"), "language"),
-					huh.NewOption(i18n.T("config.coding_level"), "coding-level"),
-					huh.NewOption(i18n.T("config.notification"), "notification"),
-					huh.NewOption(i18n.T("config.context7"), "context7"),
-				).
-				Value(&choice).
-				Run()
-			if err != nil {
-				return err
-			}
+			// Loop the menu until user chooses Exit
+			for {
+				var choice string
+				err := huh.NewSelect[string]().
+					Title(i18n.T("config.menu_title")).
+					Options(
+						huh.NewOption(i18n.T("config.language"), "language"),
+						huh.NewOption(i18n.T("config.coding_level"), "coding-level"),
+						huh.NewOption(i18n.T("config.notification"), "notification"),
+						huh.NewOption(i18n.T("config.context7"), "context7"),
+						huh.NewOption(i18n.T("config.exit"), "exit"),
+					).
+					Value(&choice).
+					Run()
+				if err != nil {
+					return err
+				}
 
-			switch choice {
-			case "language":
-				// Language is CLI-display only — no sync to projects needed
-				return runLanguageConfig()
-			case "coding-level":
-				if err := runCodingLevelConfig(); err != nil {
-					return err
+				switch choice {
+				case "exit":
+					return nil
+				case "language":
+					// Language is CLI-display only — no sync to projects needed
+					if err := runLanguageConfig(); err != nil {
+						return err
+					}
+					continue // back to menu
+				case "coding-level":
+					if err := runCodingLevelConfig(); err != nil {
+						return err
+					}
+				case "notification":
+					if err := runNotificationConfig(); err != nil {
+						return err
+					}
+				case "context7":
+					if err := runContext7Config(); err != nil {
+						return err
+					}
 				}
-			case "notification":
-				if err := runNotificationConfig(); err != nil {
-					return err
-				}
-			case "context7":
-				if err := runContext7Config(); err != nil {
+
+				if err := promptSyncAfterConfig(); err != nil {
 					return err
 				}
 			}
-
-			return promptSyncAfterConfig()
 		},
 	}
 
