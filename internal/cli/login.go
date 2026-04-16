@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/lebachhiep/claudex-cli/internal/auth"
+	"github.com/lebachhiep/claudex-cli/internal/i18n"
 )
 
 func newLoginCmd() *cobra.Command {
@@ -18,7 +19,7 @@ func newLoginCmd() *cobra.Command {
 		Short: "Authenticate with a license key and bind this machine",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if licenseKey == "" {
-				return fmt.Errorf("license key is required. Use --key=YOUR_KEY")
+				return fmt.Errorf(i18n.T("login.key_required"))
 			}
 
 			_, resp, err := auth.Login(apiClient, licenseKey, cfg)
@@ -28,10 +29,10 @@ func newLoginCmd() *cobra.Command {
 
 			green := color.New(color.FgGreen).SprintFunc()
 
-			fmt.Printf("\n  %s Authenticated successfully\n", green("✓"))
-			fmt.Printf("    License:  %s\n", color.CyanString(resp.Plan))
-			fmt.Printf("    Machine:  bound (%d/%d devices)\n", resp.DevicesUsed, resp.DevicesLimit)
-			fmt.Printf("    License:  Lifetime\n\n")
+			fmt.Printf("\n  %s %s\n", green("✓"), i18n.T("login.success"))
+			fmt.Printf("    %s\n", i18n.T("login.license", color.CyanString(resp.Plan)))
+			fmt.Printf("    %s\n", i18n.T("login.machine", resp.DevicesUsed, resp.DevicesLimit))
+			fmt.Printf("    %s\n\n", i18n.T("login.lifetime"))
 
 			return nil
 		},
@@ -48,13 +49,13 @@ func mapAuthError(err error) string {
 	msg := err.Error()
 	switch {
 	case strings.Contains(msg, "invalid_key"):
-		return "Invalid license key"
+		return i18n.T("login.err_invalid_key")
 	case strings.Contains(msg, "key_inactive"):
-		return "License has been deactivated"
+		return i18n.T("login.err_inactive")
 	case strings.Contains(msg, "device_limit_exceeded"):
-		return "Device limit reached. Run `claudex logout` on another device to free a slot"
+		return i18n.T("login.err_device_limit")
 	case strings.Contains(msg, "cannot reach"):
-		return "Cannot reach API server. Check your internet connection"
+		return i18n.T("login.err_network")
 	default:
 		return msg
 	}

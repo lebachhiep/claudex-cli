@@ -11,6 +11,8 @@ import (
 
 	"github.com/lebachhiep/claudex-cli/internal/api"
 	"github.com/lebachhiep/claudex-cli/internal/config"
+	"github.com/lebachhiep/claudex-cli/internal/i18n"
+	"github.com/lebachhiep/claudex-cli/internal/notification"
 )
 
 // Shared state initialized in PersistentPreRun, available to all subcommands.
@@ -37,6 +39,12 @@ func NewRootCmd(version, commit, date string) *cobra.Command {
 			}
 
 			apiClient = api.NewClient(cfg.ServerURL)
+
+			// Load language preference for i18n
+			if globalCfg, err := notification.LoadGlobalConfig(cfg.ConfigFile); err == nil && globalCfg.Language != "" {
+				i18n.Init(globalCfg.Language)
+			}
+
 			return nil
 		},
 		SilenceUsage:  true,

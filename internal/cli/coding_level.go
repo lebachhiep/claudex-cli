@@ -8,6 +8,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 
+	"github.com/lebachhiep/claudex-cli/internal/i18n"
 	"github.com/lebachhiep/claudex-cli/internal/notification"
 )
 
@@ -34,17 +35,17 @@ func runCodingLevelConfig() error {
 	}
 
 	// Show current level
-	fmt.Printf("\n  Current level: %s\n\n", notification.CodingLevelName(globalCfg.CodingLevel))
+	fmt.Printf("\n  %s\n\n", i18n.T("coding.current", notification.CodingLevelName(globalCfg.CodingLevel)))
 
-	// Interactive picker — build options from CodingLevelName
+	// Interactive picker — build options from i18n keys
 	var selected string
 	var opts []huh.Option[string]
-	for _, lvl := range []int{-1, 0, 1, 2, 3, 4, 5} {
-		label := fmt.Sprintf("%2d: %s", lvl, notification.CodingLevelName(lvl))
+	for _, lvl := range []int{-1, 0, 1, 2, 3} {
+		label := fmt.Sprintf("%2d: %s", lvl, i18n.T(fmt.Sprintf("coding.level_%d", lvl)))
 		opts = append(opts, huh.NewOption(label, strconv.Itoa(lvl)))
 	}
 	err = huh.NewSelect[string]().
-		Title("Select coding level").
+		Title(i18n.T("coding.title")).
 		Options(opts...).
 		Value(&selected).
 		Run()
@@ -62,7 +63,7 @@ func runCodingLevelConfig() error {
 		return fmt.Errorf("save config: %w", err)
 	}
 
-	fmt.Printf("\n  %s Coding level set to: %s\n", green("✓"), notification.CodingLevelName(level))
-	fmt.Printf("  %s Will apply on next 'claudex init' or 'claudex update'.\n\n", green("✓"))
+	fmt.Printf("\n  %s %s\n", green("✓"), i18n.T("coding.set", notification.CodingLevelName(level)))
+	fmt.Printf("  %s %s\n\n", green("✓"), i18n.T("coding.apply"))
 	return nil
 }

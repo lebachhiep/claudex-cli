@@ -1,0 +1,152 @@
+package i18n
+
+var vi = map[string]string{
+	// ── login ──
+	"login.key_required":    "cần license key. Dùng --key=YOUR_KEY",
+	"login.success":         "Xác thực thành công",
+	"login.license":         "License:  %s",
+	"login.machine":         "Máy:      đã liên kết (%d/%d thiết bị)",
+	"login.lifetime":        "License:  Vĩnh viễn",
+	"login.err_invalid_key": "License key không hợp lệ",
+	"login.err_inactive":    "License đã bị vô hiệu hóa",
+	"login.err_device_limit": "Đã đạt giới hạn thiết bị. Chạy `claudex logout` trên thiết bị khác để giải phóng",
+	"login.err_network":     "Không thể kết nối API server. Kiểm tra kết nối internet",
+
+	// ── logout ──
+	"logout.success":  "Đã đăng xuất",
+	"logout.unbound":  "Đã hủy liên kết thiết bị (%d/%d thiết bị còn lại)",
+
+	// ── status ──
+	"status.license":       "License:    %s (đang hoạt động)",
+	"status.validity":      "Thời hạn:   Vĩnh viễn",
+	"status.project":       "Dự án:      %s",
+	"status.rules_none":    "Rules:      chưa cài (chạy `claudex init`)",
+	"status.rules":         "Rules:      %s (cài ngày %s)",
+	"status.latest_update": "Mới nhất:   %s (chạy `claudex update`)",
+	"status.latest_ok":     "Mới nhất:   %s %s đã cập nhật",
+
+	// ── init ──
+	"init.already_latest": "Đã là phiên bản mới nhất (%s)",
+	"init.updated":        "Đã cập nhật %s → %s",
+	"init.installed":      "Đã cài rules %s (%d KB)",
+	"init.stats":          "    %d skills, %d agents, %d rules",
+	"init.ready":          "Sẵn sàng! Mở Claude Code và dùng /skill-name để bắt đầu.",
+	"init.coding_sync":    "Đồng bộ coding level: %s",
+	"init.notify_sync":    "Đồng bộ notification: %s",
+	"init.context7_sync":  "Đồng bộ Context7: %s",
+	"init.coding_env_sync": "Đồng bộ coding level env: %s",
+
+	// ── update ──
+	"update.removed_stale":  "Đã xóa %d dự án cũ",
+	"update.no_projects":    "chưa có dự án nào. Chạy 'claudex init' trong dự án trước",
+	"update.no_lock":        "không có lock file — chạy 'claudex init' trước",
+	"update.checking":       "Đang kiểm tra cập nhật...",
+	"update.check_err":      "lỗi kiểm tra: %s",
+	"update.already_latest": "Đã là phiên bản mới nhất (%s)",
+	"update.new_version":    "Có phiên bản mới: %s → %s",
+	"update.changelog":      "Thay đổi: %s",
+	"update.downloading":    "Đang tải %s...",
+	"update.downloaded":     "Đã tải (%d KB)",
+	"update.projects_count": "%d dự án đang theo dõi:",
+	"update.project_item":   "  %d. %s (v%s)",
+	"update.confirm":        "Cập nhật tất cả %d dự án lên %s?",
+	"update.confirm_all":    "Cập nhật tất cả",
+	"update.skipped":        "Đã bỏ qua. Bundle đã cache — chạy 'claudex init' để cài.",
+	"update.project_ok":     "%s — %d skills, %d agents, %d rules",
+	"update.save_err":       "Lỗi lưu danh sách dự án: %s",
+	"update.done":           "Đã cập nhật %d dự án lên %s",
+
+	// ── versions ──
+	"versions.none":       "Không có phiên bản nào.",
+	"versions.header":     "Các phiên bản có sẵn:",
+	"versions.col_ver":    "PHIÊN BẢN",
+	"versions.col_size":   "DUNG LƯỢNG",
+	"versions.col_date":   "NGÀY",
+	"versions.col_log":    "THAY ĐỔI",
+	"versions.current":    "Phiên bản hiện tại: %s",
+	"versions.plan":       "Gói:       %s",
+	"versions.installed":  "Cài ngày:  %s",
+	"versions.cli":        "CLI:       %s",
+	"versions.no_rules":   "chưa cài rules. Chạy `claudex init` trước",
+
+	// ── config ──
+	"config.menu_title":     "Bạn muốn cấu hình gì?",
+	"config.coding_level":   "Coding Level — Mức độ giải thích của AI",
+	"config.notification":   "Notification — Cấu hình Telegram/Discord/Slack",
+	"config.context7":       "Context7 — Cấu hình API key cho docs-seeker",
+	"config.language":       "Language — Chọn ngôn ngữ / Select language",
+
+	// ── notification config ──
+	"notify.status_title":    "Trạng thái Notification",
+	"notify.enabled_on":      "BẬT",
+	"notify.enabled_off":     "TẮT",
+	"notify.provider":        "Nền tảng : %s",
+	"notify.not_configured":  "chưa cấu hình",
+	"notify.action_title":    "Bạn muốn làm gì?",
+	"notify.toggle":          "Bật/tắt thông báo",
+	"notify.reconfigure":     "Cấu hình lại nền tảng",
+	"notify.skip_keep":       "Bỏ qua — giữ nguyên",
+	"notify.enabled_msg":     "Đã bật thông báo",
+	"notify.disabled_msg":    "Đã tắt thông báo",
+	"notify.select_provider": "Chọn nền tảng thông báo",
+	"notify.saved":           "Đã lưu cấu hình thông báo (%s)",
+	"notify.bot_token":       "Bot Token",
+	"notify.bot_token_desc":  "Lấy từ @BotFather trên Telegram",
+	"notify.chat_id":         "Chat ID",
+	"notify.chat_id_desc":    "Lấy từ @userinfobot trên Telegram",
+	"notify.discord_url":     "Discord Webhook URL",
+	"notify.discord_desc":    "Server Settings → Integrations → Webhooks → Copy URL",
+	"notify.slack_url":       "Slack Webhook URL",
+	"notify.slack_desc":      "api.slack.com → Your Apps → Incoming Webhooks → Copy URL",
+	"notify.field_required":  "%s không được để trống",
+	"notify.keeping":         "Giữ nguyên cấu hình.",
+
+	// ── coding level ──
+	"coding.title":   "Chọn coding level",
+	"coding.current": "Level hiện tại: %s",
+	"coding.set":     "Đã đặt coding level: %s",
+	"coding.apply":   "Sẽ áp dụng khi chạy 'claudex init' hoặc 'claudex update'.",
+	"coding.level_-1": "Tắt",
+	"coding.level_0":  "Intern — giải thích mọi thuật ngữ, tránh jargon",
+	"coding.level_1":  "Junior — giải thích pattern lần đầu, gợi ý best practices",
+	"coding.level_2":  "Mid — chỉ giải thích khi logic phức tạp hoặc trade-off không rõ",
+	"coding.level_3":  "Senior+ — tối giản, focus scalability/security/business impact",
+
+	// ── context7 ──
+	"context7.current":   "API Key hiện tại: %s",
+	"context7.not_set":   "chưa đặt",
+	"context7.title":     "Context7 API Key",
+	"context7.desc":      "Lấy từ https://context7.com → API Keys (để trống để xóa)",
+	"context7.saved":     "Đã lưu Context7 API key",
+	"context7.cleared":   "Đã xóa Context7 API key",
+
+	// ── language ──
+	"lang.title":     "Chọn ngôn ngữ / Select language",
+	"lang.current":   "Ngôn ngữ hiện tại: %s",
+	"lang.english":   "English",
+	"lang.vietnamese": "Tiếng Việt",
+	"lang.saved":     "Đã đặt ngôn ngữ: %s",
+
+	// ── projects ──
+	"projects.none":          "Chưa có dự án nào. Chạy 'claudex init' trong dự án trước.",
+	"projects.title":         "Danh sách dự án",
+	"projects.col_path":      "Đường dẫn",
+	"projects.col_version":   "Phiên bản",
+	"projects.col_installed": "Cài ngày",
+	"projects.col_updated":   "Cập nhật",
+	"projects.current":       "(hiện tại)",
+	"projects.removed_stale": "Đã xóa %d dự án cũ",
+	"projects.count":         "%d dự án đang theo dõi",
+	"projects.global_config": "Cấu hình chung",
+	"projects.notify_on":     "%s (%s)",
+	"projects.context7_ok":   "đã cấu hình",
+	"projects.context7_none": "chưa đặt",
+	"projects.sync_title":    "Đồng bộ cấu hình tới dự án?",
+	"projects.sync_current":  "Chỉ dự án hiện tại",
+	"projects.sync_all":      "Tất cả dự án",
+	"projects.synced":        "Đã đồng bộ tới %d dự án",
+
+	// ── common ──
+	"common.skip":       "Bỏ qua",
+	"common.create_dir": "tạo thư mục: %s",
+}

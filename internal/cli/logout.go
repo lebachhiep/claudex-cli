@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/lebachhiep/claudex-cli/internal/auth"
+	"github.com/lebachhiep/claudex-cli/internal/i18n"
 )
 
 func newLogoutCmd() *cobra.Command {
@@ -20,8 +21,8 @@ func newLogoutCmd() *cobra.Command {
 			}
 
 			green := color.New(color.FgGreen).SprintFunc()
-			fmt.Printf("\n  %s Logged out\n", green("✓"))
-			fmt.Printf("  %s Device unbound (%d/%d devices remaining)\n\n", green("✓"), resp.DevicesUsed, resp.DevicesLimit)
+			fmt.Printf("\n  %s %s\n", green("✓"), i18n.T("logout.success"))
+			fmt.Printf("  %s %s\n\n", green("✓"), i18n.T("logout.unbound", resp.DevicesUsed, resp.DevicesLimit))
 
 			return nil
 		},

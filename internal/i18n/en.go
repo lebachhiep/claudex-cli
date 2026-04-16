@@ -1,0 +1,152 @@
+package i18n
+
+var en = map[string]string{
+	// ── login ──
+	"login.key_required":    "license key is required. Use --key=YOUR_KEY",
+	"login.success":         "Authenticated successfully",
+	"login.license":         "License:  %s",
+	"login.machine":         "Machine:  bound (%d/%d devices)",
+	"login.lifetime":        "License:  Lifetime",
+	"login.err_invalid_key": "Invalid license key",
+	"login.err_inactive":    "License has been deactivated",
+	"login.err_device_limit": "Device limit reached. Run `claudex logout` on another device to free a slot",
+	"login.err_network":     "Cannot reach API server. Check your internet connection",
+
+	// ── logout ──
+	"logout.success":  "Logged out",
+	"logout.unbound":  "Device unbound (%d/%d devices remaining)",
+
+	// ── status ──
+	"status.license":       "License:    %s (active)",
+	"status.validity":      "Validity:   Lifetime",
+	"status.project":       "Project:    %s",
+	"status.rules_none":    "Rules:      not installed (run `claudex init`)",
+	"status.rules":         "Rules:      %s (installed %s)",
+	"status.latest_update": "Latest:     %s (run `claudex update`)",
+	"status.latest_ok":     "Latest:     %s %s up to date",
+
+	// ── init ──
+	"init.already_latest": "Already on latest version (%s)",
+	"init.updated":        "Updated %s → %s",
+	"init.installed":      "Installed rules %s (%d KB)",
+	"init.stats":          "    %d skills, %d agents, %d rules",
+	"init.ready":          "Ready! Open Claude Code and use /skill-name to get started.",
+	"init.coding_sync":    "Coding level sync: %s",
+	"init.notify_sync":    "Notification sync: %s",
+	"init.context7_sync":  "Context7 sync: %s",
+	"init.coding_env_sync": "Coding level env sync: %s",
+
+	// ── update ──
+	"update.removed_stale":  "Removed %d stale project(s)",
+	"update.no_projects":    "no tracked projects. Run 'claudex init' in a project first",
+	"update.no_lock":        "no project has a lock file — cannot determine current version. Run 'claudex init' first",
+	"update.checking":       "Checking for updates...",
+	"update.check_err":      "check update: %s",
+	"update.already_latest": "Already on latest version (%s)",
+	"update.new_version":    "New version available: %s → %s",
+	"update.changelog":      "Changelog: %s",
+	"update.downloading":    "Downloading %s...",
+	"update.downloaded":     "Downloaded (%d KB)",
+	"update.projects_count": "%d project(s) tracked:",
+	"update.project_item":   "  %d. %s (v%s)",
+	"update.confirm":        "Update all %d project(s) to %s?",
+	"update.confirm_all":    "Update all projects",
+	"update.skipped":        "Skipped. Bundle cached — run 'claudex init' in a project to install.",
+	"update.project_ok":     "%s — %d skills, %d agents, %d rules",
+	"update.save_err":       "Failed to save project tracking: %s",
+	"update.done":           "Updated %d project(s) to %s",
+
+	// ── versions ──
+	"versions.none":       "No versions available.",
+	"versions.header":     "Available versions:",
+	"versions.col_ver":    "VERSION",
+	"versions.col_size":   "SIZE",
+	"versions.col_date":   "DATE",
+	"versions.col_log":    "CHANGELOG",
+	"versions.current":    "Current version: %s",
+	"versions.plan":       "Plan:      %s",
+	"versions.installed":  "Installed: %s",
+	"versions.cli":        "CLI:       %s",
+	"versions.no_rules":   "no rules installed in this project. Run `claudex init` first",
+
+	// ── config ──
+	"config.menu_title":     "What would you like to configure?",
+	"config.coding_level":   "Coding Level — Set AI explanation verbosity",
+	"config.notification":   "Notification — Configure Telegram/Discord/Slack",
+	"config.context7":       "Context7 — Configure API key for docs-seeker",
+	"config.language":       "Language — Select language / Chọn ngôn ngữ",
+
+	// ── notification config ──
+	"notify.status_title":    "Notification Status",
+	"notify.enabled_on":      "ON",
+	"notify.enabled_off":     "OFF",
+	"notify.provider":        "Provider : %s",
+	"notify.not_configured":  "not configured",
+	"notify.action_title":    "What would you like to do?",
+	"notify.toggle":          "Toggle on/off",
+	"notify.reconfigure":     "Reconfigure provider",
+	"notify.skip_keep":       "Skip — keep current",
+	"notify.enabled_msg":     "Notifications enabled",
+	"notify.disabled_msg":    "Notifications disabled",
+	"notify.select_provider": "Select notification provider",
+	"notify.saved":           "Notification config saved (%s)",
+	"notify.bot_token":       "Bot Token",
+	"notify.bot_token_desc":  "Get from @BotFather on Telegram",
+	"notify.chat_id":         "Chat ID",
+	"notify.chat_id_desc":    "Get from @userinfobot on Telegram",
+	"notify.discord_url":     "Discord Webhook URL",
+	"notify.discord_desc":    "Server Settings → Integrations → Webhooks → Copy URL",
+	"notify.slack_url":       "Slack Webhook URL",
+	"notify.slack_desc":      "api.slack.com → Your Apps → Incoming Webhooks → Copy URL",
+	"notify.field_required":  "%s cannot be empty",
+	"notify.keeping":         "Keeping existing config.",
+
+	// ── coding level ──
+	"coding.title":   "Select coding level",
+	"coding.current": "Current level: %s",
+	"coding.set":     "Coding level set to: %s",
+	"coding.apply":   "Will apply on next 'claudex init' or 'claudex update'.",
+	"coding.level_-1": "Disabled",
+	"coding.level_0":  "Intern — explain all terms, avoid jargon",
+	"coding.level_1":  "Junior — explain patterns first time, suggest best practices",
+	"coding.level_2":  "Mid — only explain complex logic or unclear trade-offs",
+	"coding.level_3":  "Senior+ — terse, focus scalability/security/business impact",
+
+	// ── context7 ──
+	"context7.current":   "Current API Key: %s",
+	"context7.not_set":   "not set",
+	"context7.title":     "Context7 API Key",
+	"context7.desc":      "Get from https://context7.com → API Keys (leave empty to clear)",
+	"context7.saved":     "Context7 API key saved",
+	"context7.cleared":   "Context7 API key cleared",
+
+	// ── language ──
+	"lang.title":     "Select language / Chọn ngôn ngữ",
+	"lang.current":   "Current language: %s",
+	"lang.english":   "English",
+	"lang.vietnamese": "Tiếng Việt",
+	"lang.saved":     "Language set to: %s",
+
+	// ── projects ──
+	"projects.none":          "No tracked projects. Run 'claudex init' in a project first.",
+	"projects.title":         "Tracked Projects",
+	"projects.col_path":      "Path",
+	"projects.col_version":   "Version",
+	"projects.col_installed": "Installed",
+	"projects.col_updated":   "Updated",
+	"projects.current":       "(current)",
+	"projects.removed_stale": "Removed %d stale project(s)",
+	"projects.count":         "%d project(s) tracked",
+	"projects.global_config": "Global Config",
+	"projects.notify_on":     "%s (%s)",
+	"projects.context7_ok":   "configured",
+	"projects.context7_none": "not set",
+	"projects.sync_title":    "Sync global config to projects?",
+	"projects.sync_current":  "Update current project only",
+	"projects.sync_all":      "Update all projects",
+	"projects.synced":        "Synced config to %d project(s)",
+
+	// ── common ──
+	"common.skip":       "Skip",
+	"common.create_dir": "create data dir: %s",
+}
