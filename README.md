@@ -109,22 +109,6 @@ Tất cả các lệnh CLI có thể chạy ở terminal (không phải trong Cl
 
 ---
 
-## Cấu hình
-
-### Thư mục dữ liệu
-
-```
-~/.claudex/
-├── auth.json        # Session token + machine ID (đã mã hóa)
-├── config.json      # Cấu hình notification, language, coding level
-├── projects.json    # Danh sách dự án đã cài rules
-└── cache/           # Cache các bundle rules đã tải
-```
-
-File nhạy cảm dùng quyền `0600`.
-
----
-
 ## Tính năng chính
 
 - **Machine-specific auth** — license gắn theo hardware fingerprint, chặn share key lung tung, vẫn support nhiều máy trong hạn mức gói.

@@ -109,22 +109,6 @@ All CLI commands run in your terminal (not inside Claude Code).
 
 ---
 
-## Configuration
-
-### Data directory
-
-```
-~/.claudex/
-├── auth.json        # Session token + machine ID (encrypted)
-├── config.json      # Notification, language, coding level config
-├── projects.json    # Registry of installed projects
-└── cache/           # Downloaded rules bundle cache
-```
-
-Sensitive files use `0600` permissions.
-
----
-
 ## Features
 
 - **Machine-specific auth** — licenses are bound to a hardware fingerprint, preventing uncontrolled sharing while still supporting multiple devices within your plan.
