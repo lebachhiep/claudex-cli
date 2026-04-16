@@ -67,7 +67,7 @@ func runLanguageConfig() error {
 	if selected == "vi" {
 		langName = i18n.T("lang.vietnamese")
 	}
-	fmt.Printf("\n  %s %s\n", green("✓"), fmt.Sprintf(i18n.T("lang.saved"), langName))
+	fmt.Printf("\n  %s %s\n\n", green("✓"), fmt.Sprintf(i18n.T("lang.saved"), langName))
 
-	return promptSyncAfterConfig()
+	return nil
 }

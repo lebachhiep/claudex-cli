@@ -100,11 +100,6 @@ func newInitCmd(cliVersion string) *cobra.Command {
 					fmt.Printf("  %s %s\n", yellow("!"), i18n.T("init.context7_sync", err))
 				}
 			}
-			if globalCfg != nil && globalCfg.Language != "" {
-				if err := notification.SyncLanguageToPath(globalCfg.Language, dir); err != nil {
-					fmt.Printf("  %s Language sync: %s\n", yellow("!"), err)
-				}
-			}
 
 			// Output
 			if mode == rules.ModeUpdate && lockErr == nil {

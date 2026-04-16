@@ -220,13 +220,6 @@ func askSyncProjects(globalCfg *notification.GlobalConfig, store *projects.Store
 				hasError = true
 			}
 		}
-		// Sync language
-		if globalCfg.Language != "" {
-			if err := notification.SyncLanguageToPath(globalCfg.Language, p.Path); err != nil {
-				errors = append(errors, fmt.Sprintf("%s: language: %s", p.Path, err))
-				hasError = true
-			}
-		}
 		if !hasError {
 			synced++
 		}

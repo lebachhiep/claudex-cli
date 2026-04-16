@@ -142,9 +142,6 @@ func newUpdateCmd(cliVersion string) *cobra.Command {
 				if globalCfg != nil && globalCfg.HasContext7() {
 					_ = notification.SyncContext7ToPath(globalCfg.Context7, p.Path)
 				}
-				if globalCfg != nil && globalCfg.Language != "" {
-					_ = notification.SyncLanguageToPath(globalCfg.Language, p.Path)
-				}
 
 				fmt.Printf("  %s %s\n",
 					green("✓"), i18n.T("update.project_ok", p.Path, stats.SkillCount, stats.AgentCount, stats.RuleCount))
