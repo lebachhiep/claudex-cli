@@ -17,7 +17,10 @@ func newContext7Cmd() *cobra.Command {
 		Use:   "context7",
 		Short: "Configure Context7 API key for docs-seeker",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runContext7Config()
+			if err := runContext7Config(); err != nil {
+				return err
+			}
+			return promptSyncAfterConfig()
 		},
 	}
 }
@@ -65,7 +68,7 @@ func runContext7Config() error {
 		fmt.Printf("\n  %s %s\n", green("✓"), i18n.T("context7.cleared"))
 	}
 
-	return promptSyncAfterConfig()
+	return nil
 }
 
 // maskAPIKey shows first 8 and last 4 chars, masking the rest.
