@@ -29,6 +29,12 @@ var preservePaths = []string{
 	"hooks/.logs",
 }
 
+// neverOverwrite lists root-level files that should not be overwritten if they already exist.
+// These files belong to the project, not to claudex.
+var neverOverwrite = []string{
+	".gitignore",
+}
+
 // FileStats tracks what was extracted from the bundle.
 type FileStats struct {
 	SkillCount  int
@@ -220,6 +226,11 @@ func unzip(zipBytes []byte, targetDir string) (*FileStats, error) {
 			continue
 		}
 
+		// Skip root-level files that belong to the project (e.g. .gitignore)
+		if shouldSkipOverwrite(cleanName, targetDir) {
+			continue
+		}
+
 		// Create parent dirs
 		if err := os.MkdirAll(filepath.Dir(target), 0755); err != nil {
 			return nil, fmt.Errorf("mkdir parent %s: %w", target, err)
@@ -249,6 +260,19 @@ func unzip(zipBytes []byte, targetDir string) (*FileStats, error) {
 	}
 
 	return stats, nil
+}
+
+// shouldSkipOverwrite returns true if the file is in neverOverwrite list and already exists.
+func shouldSkipOverwrite(cleanName, targetDir string) bool {
+	for _, name := range neverOverwrite {
+		if cleanName == name {
+			target := filepath.Join(targetDir, cleanName)
+			if _, err := os.Stat(target); err == nil {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // trackFile increments stats counters based on file path.
