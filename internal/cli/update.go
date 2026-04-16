@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/lebachhiep/claudex-cli/internal/auth"
+	"github.com/lebachhiep/claudex-cli/internal/i18n"
 	"github.com/lebachhiep/claudex-cli/internal/notification"
 	"github.com/lebachhiep/claudex-cli/internal/projects"
 	"github.com/lebachhiep/claudex-cli/internal/rules"
@@ -34,12 +35,12 @@ func newUpdateCmd(cliVersion string) *cobra.Command {
 			cleaned := store.CleanStale()
 			if cleaned > 0 {
 				_ = store.Save()
-				fmt.Printf("  %s Removed %d stale project(s)\n", yellow("!"), cleaned)
+				fmt.Printf("  %s %s\n", yellow("!"), i18n.T("update.removed_stale", cleaned))
 			}
 
 			projectList := store.List()
 			if len(projectList) == 0 {
-				return fmt.Errorf("no tracked projects. Run 'claudex init' in a project first")
+				return fmt.Errorf(i18n.T("update.no_projects"))
 			}
 
 			// Find oldest version across all projects to ensure all get updated
@@ -52,51 +53,51 @@ func newUpdateCmd(cliVersion string) *cobra.Command {
 				}
 			}
 			if currentVersion == "" {
-				return fmt.Errorf("no project has a lock file — cannot determine current version. Run 'claudex init' first")
+				return fmt.Errorf(i18n.T("update.no_lock"))
 			}
 
 			// Check for updates
-			fmt.Printf("\n  Checking for updates...\n")
+			fmt.Printf("\n  %s\n", i18n.T("update.checking"))
 			updateInfo, err := rules.CheckUpdate(apiClient, authData, currentVersion)
 			if err != nil {
-				return fmt.Errorf("check update: %w", err)
+				return fmt.Errorf(i18n.T("update.check_err", err))
 			}
 
 			if !updateInfo.HasUpdate {
-				fmt.Printf("  %s Already on latest version (%s)\n\n", green("✓"), updateInfo.LatestVersion)
+				fmt.Printf("  %s %s\n\n", green("✓"), i18n.T("update.already_latest", updateInfo.LatestVersion))
 				return nil
 			}
 
-			fmt.Printf("  %s New version available: %s → %s\n", green("✓"), updateInfo.CurrentVersion, updateInfo.LatestVersion)
+			fmt.Printf("  %s %s\n", green("✓"), i18n.T("update.new_version", updateInfo.CurrentVersion, updateInfo.LatestVersion))
 			if updateInfo.Changelog != "" {
-				fmt.Printf("  Changelog: %s\n", updateInfo.Changelog)
+				fmt.Printf("  %s\n", i18n.T("update.changelog", updateInfo.Changelog))
 			}
 
 			// Download bundle (will be cached at ~/.claudex/cache/)
-			fmt.Printf("  Downloading %s...\n", updateInfo.LatestVersion)
+			fmt.Printf("  %s\n", i18n.T("update.downloading", updateInfo.LatestVersion))
 			result, err := rules.Download(apiClient, authData, cfg, currentVersion, updateInfo.LatestVersion)
 			if err != nil {
 				return fmt.Errorf("download: %w", err)
 			}
-			fmt.Printf("  %s Downloaded (%d KB)\n", green("✓"), result.SizeBytes/1024)
+			fmt.Printf("  %s %s\n", green("✓"), i18n.T("update.downloaded", result.SizeBytes/1024))
 
 			// Ask to update all projects
-			fmt.Printf("\n  %d project(s) tracked:\n", len(projectList))
+			fmt.Printf("\n  %s\n", i18n.T("update.projects_count", len(projectList)))
 			for i, p := range projectList {
 				lock, _ := rules.ReadLock(p.Path)
 				ver := "unknown"
 				if lock != nil {
 					ver = lock.Version
 				}
-				fmt.Printf("    %d. %s (v%s)\n", i+1, p.Path, ver)
+				fmt.Printf("  %s\n", i18n.T("update.project_item", i+1, p.Path, ver))
 			}
 
 			var choice string
 			err = huh.NewSelect[string]().
-				Title(fmt.Sprintf("Update all %d project(s) to %s?", len(projectList), updateInfo.LatestVersion)).
+				Title(i18n.T("update.confirm", len(projectList), updateInfo.LatestVersion)).
 				Options(
-					huh.NewOption("Update all projects", "all"),
-					huh.NewOption("Skip", "skip"),
+					huh.NewOption(i18n.T("update.confirm_all"), "all"),
+					huh.NewOption(i18n.T("common.skip"), "skip"),
 				).
 				Value(&choice).
 				Run()
@@ -105,7 +106,7 @@ func newUpdateCmd(cliVersion string) *cobra.Command {
 			}
 
 			if choice == "skip" {
-				fmt.Printf("\n  %s Skipped. Bundle cached — run 'claudex init' in a project to install.\n\n", yellow("!"))
+				fmt.Printf("\n  %s %s\n\n", yellow("!"), i18n.T("update.skipped"))
 				return nil
 			}
 
@@ -132,21 +133,30 @@ func newUpdateCmd(cliVersion string) *cobra.Command {
 
 				// Sync config
 				_ = rules.SyncCodingLevel(cfg.ConfigFile, p.Path)
+				if globalCfg != nil && globalCfg.CodingLevel != -1 {
+					_ = notification.SyncCodingLevelEnvToPath(globalCfg.CodingLevel, p.Path)
+				}
 				if globalCfg != nil && globalCfg.HasNotification() {
-					_ = notification.SyncToPath(globalCfg.Notification, p.Path)
+					_ = notification.SyncToPath(globalCfg.Notification, globalCfg.EnableNotify, p.Path)
+				}
+				if globalCfg != nil && globalCfg.HasContext7() {
+					_ = notification.SyncContext7ToPath(globalCfg.Context7, p.Path)
+				}
+				if globalCfg != nil && globalCfg.Language != "" {
+					_ = notification.SyncLanguageToPath(globalCfg.Language, p.Path)
 				}
 
-				fmt.Printf("  %s %s — %d skills, %d agents, %d rules\n",
-					green("✓"), p.Path, stats.SkillCount, stats.AgentCount, stats.RuleCount)
+				fmt.Printf("  %s %s\n",
+					green("✓"), i18n.T("update.project_ok", p.Path, stats.SkillCount, stats.AgentCount, stats.RuleCount))
 				updated++
 			}
 
 			if err := store.Save(); err != nil {
-				fmt.Printf("  %s Failed to save project tracking: %s\n", yellow("!"), err)
+				fmt.Printf("  %s %s\n", yellow("!"), i18n.T("update.save_err", err))
 			}
 
 			if updated > 0 {
-				fmt.Printf("\n  %s Updated %d project(s) to %s\n", green("✓"), updated, result.Version)
+				fmt.Printf("\n  %s %s\n", green("✓"), i18n.T("update.done", updated, result.Version))
 			}
 			for _, e := range errors {
 				fmt.Printf("  %s %s\n", color.RedString("✗"), e)

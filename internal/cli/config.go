@@ -8,6 +8,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 
+	"github.com/lebachhiep/claudex-cli/internal/i18n"
 	"github.com/lebachhiep/claudex-cli/internal/notification"
 )
 
@@ -16,12 +17,22 @@ func newConfigCmd() *cobra.Command {
 		Use:   "config",
 		Short: "Manage CLI configuration (notification, coding level, ...)",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			// First-run: ask language if not set yet
+			globalCfg, _ := notification.LoadGlobalConfig(cfg.ConfigFile)
+			if globalCfg != nil && globalCfg.Language == "" {
+				if err := runLanguageConfig(); err != nil {
+					return err
+				}
+			}
+
 			var choice string
 			err := huh.NewSelect[string]().
-				Title("What would you like to configure?").
+				Title(i18n.T("config.menu_title")).
 				Options(
-					huh.NewOption("Coding Level — Set AI explanation verbosity", "coding-level"),
-					huh.NewOption("Notification — Configure Telegram/Discord/Slack", "notification"),
+					huh.NewOption(i18n.T("config.language"), "language"),
+					huh.NewOption(i18n.T("config.coding_level"), "coding-level"),
+					huh.NewOption(i18n.T("config.notification"), "notification"),
+					huh.NewOption(i18n.T("config.context7"), "context7"),
 				).
 				Value(&choice).
 				Run()
@@ -30,12 +41,20 @@ func newConfigCmd() *cobra.Command {
 			}
 
 			switch choice {
+			case "language":
+				if err := runLanguageConfig(); err != nil {
+					return err
+				}
 			case "coding-level":
 				if err := runCodingLevelConfig(); err != nil {
 					return err
 				}
 			case "notification":
 				if err := runNotificationConfig(); err != nil {
+					return err
+				}
+			case "context7":
+				if err := runContext7Config(); err != nil {
 					return err
 				}
 			}
@@ -45,8 +64,10 @@ func newConfigCmd() *cobra.Command {
 	}
 
 	cmd.AddCommand(
+		newLanguageCmd(),
 		newNotificationSubCmd(),
 		newCodingLevelCmd(),
+		newContext7Cmd(),
 	)
 
 	return cmd
@@ -64,6 +85,8 @@ func newNotificationSubCmd() *cobra.Command {
 
 func runNotificationConfig() error {
 	green := color.New(color.FgGreen).SprintFunc()
+	yellow := color.New(color.FgYellow).SprintFunc()
+	cyan := color.New(color.FgCyan).SprintFunc()
 
 	if err := cfg.EnsureDataDir(); err != nil {
 		return fmt.Errorf("create data dir: %w", err)
@@ -71,27 +94,92 @@ func runNotificationConfig() error {
 
 	globalCfg, err := notification.LoadGlobalConfig(cfg.ConfigFile)
 	if err != nil {
-		globalCfg = &notification.GlobalConfig{CodingLevel: -1}
+		globalCfg = &notification.GlobalConfig{CodingLevel: -1, EnableNotify: true}
 	}
 
+	// Show current status
+	fmt.Printf("\n  %s %s\n", cyan("■"), i18n.T("notify.status_title"))
+	if globalCfg.EnableNotify {
+		fmt.Printf("    Enabled  : %s\n", green(i18n.T("notify.enabled_on")))
+	} else {
+		fmt.Printf("    Enabled  : %s\n", yellow(i18n.T("notify.enabled_off")))
+	}
 	if globalCfg.HasNotification() {
-		var overwrite bool
-		err := huh.NewConfirm().
-			Title(fmt.Sprintf("Notification already configured (%s). Overwrite?", globalCfg.Notification.Provider)).
-			Value(&overwrite).
+		fmt.Printf("    %s\n", i18n.T("notify.provider", globalCfg.Notification.Provider))
+		printProviderDetails(globalCfg)
+	} else {
+		fmt.Printf("    %s\n", i18n.T("notify.provider", yellow(i18n.T("notify.not_configured"))))
+	}
+	fmt.Println()
+
+	// If already configured, show action menu
+	if globalCfg.HasNotification() {
+		var action string
+		opts := []huh.Option[string]{
+			huh.NewOption(i18n.T("notify.toggle"), "toggle"),
+			huh.NewOption(i18n.T("notify.reconfigure"), "reconfigure"),
+			huh.NewOption(i18n.T("notify.skip_keep"), "skip"),
+		}
+		err := huh.NewSelect[string]().
+			Title(i18n.T("notify.action_title")).
+			Options(opts...).
+			Value(&action).
 			Run()
 		if err != nil {
 			return err
 		}
-		if !overwrite {
-			fmt.Printf("\n  %s Keeping existing config.\n\n", green("✓"))
+
+		switch action {
+		case "toggle":
+			globalCfg.EnableNotify = !globalCfg.EnableNotify
+			if err := globalCfg.Save(cfg.ConfigFile); err != nil {
+				return fmt.Errorf("save config: %w", err)
+			}
+			if globalCfg.EnableNotify {
+				fmt.Printf("\n  %s %s\n", green("✓"), i18n.T("notify.enabled_msg"))
+			} else {
+				fmt.Printf("\n  %s %s\n", green("✓"), i18n.T("notify.disabled_msg"))
+			}
 			return nil
+		case "skip":
+			return nil
+		case "reconfigure":
+			// Fall through to provider setup below
 		}
 	}
 
+	// Provider setup flow
+	return runProviderSetup(globalCfg)
+}
+
+// printProviderDetails shows the current provider credentials (masked).
+func printProviderDetails(globalCfg *notification.GlobalConfig) {
+	switch globalCfg.Notification.Provider {
+	case notification.ProviderTelegram:
+		fmt.Printf("    Bot Token: %s\n", maskValue(globalCfg.Notification.Telegram.BotToken))
+		fmt.Printf("    Chat ID  : %s\n", globalCfg.Notification.Telegram.ChatID)
+	case notification.ProviderDiscord:
+		fmt.Printf("    Webhook  : %s\n", maskValue(globalCfg.Notification.Discord.WebhookURL))
+	case notification.ProviderSlack:
+		fmt.Printf("    Webhook  : %s\n", maskValue(globalCfg.Notification.Slack.WebhookURL))
+	}
+}
+
+// maskValue shows first 10 and last 4 chars of a secret value.
+func maskValue(s string) string {
+	if len(s) <= 14 {
+		return strings.Repeat("*", len(s))
+	}
+	return s[:10] + "..." + s[len(s)-4:]
+}
+
+// runProviderSetup handles the interactive provider selection and credential input.
+func runProviderSetup(globalCfg *notification.GlobalConfig) error {
+	green := color.New(color.FgGreen).SprintFunc()
+
 	var provider string
-	err = huh.NewSelect[string]().
-		Title("Select notification provider").
+	err := huh.NewSelect[string]().
+		Title(i18n.T("notify.select_provider")).
 		Options(
 			huh.NewOption("Telegram", notification.ProviderTelegram),
 			huh.NewOption("Discord", notification.ProviderDiscord),
@@ -111,15 +199,15 @@ func runNotificationConfig() error {
 		err = huh.NewForm(
 			huh.NewGroup(
 				huh.NewInput().
-					Title("Bot Token").
-					Description("Get from @BotFather on Telegram").
+					Title(i18n.T("notify.bot_token")).
+					Description(i18n.T("notify.bot_token_desc")).
 					Value(&botToken).
-					Validate(notEmpty("Bot Token")),
+					Validate(notEmpty(i18n.T("notify.bot_token"))),
 				huh.NewInput().
-					Title("Chat ID").
-					Description("Get from @userinfobot on Telegram").
+					Title(i18n.T("notify.chat_id")).
+					Description(i18n.T("notify.chat_id_desc")).
 					Value(&chatID).
-					Validate(notEmpty("Chat ID")),
+					Validate(notEmpty(i18n.T("notify.chat_id"))),
 			),
 		).Run()
 		if err != nil {
@@ -131,10 +219,10 @@ func runNotificationConfig() error {
 	case notification.ProviderDiscord:
 		var webhookURL string
 		err = huh.NewInput().
-			Title("Discord Webhook URL").
-			Description("Server Settings → Integrations → Webhooks → Copy URL").
+			Title(i18n.T("notify.discord_url")).
+			Description(i18n.T("notify.discord_desc")).
 			Value(&webhookURL).
-			Validate(notEmpty("Webhook URL")).
+			Validate(notEmpty(i18n.T("notify.discord_url"))).
 			Run()
 		if err != nil {
 			return err
@@ -144,10 +232,10 @@ func runNotificationConfig() error {
 	case notification.ProviderSlack:
 		var webhookURL string
 		err = huh.NewInput().
-			Title("Slack Webhook URL").
-			Description("api.slack.com → Your Apps → Incoming Webhooks → Copy URL").
+			Title(i18n.T("notify.slack_url")).
+			Description(i18n.T("notify.slack_desc")).
 			Value(&webhookURL).
-			Validate(notEmpty("Webhook URL")).
+			Validate(notEmpty(i18n.T("notify.slack_url"))).
 			Run()
 		if err != nil {
 			return err
@@ -159,7 +247,7 @@ func runNotificationConfig() error {
 	if err := globalCfg.Save(cfg.ConfigFile); err != nil {
 		return fmt.Errorf("save config: %w", err)
 	}
-	fmt.Printf("\n  %s Notification config saved (%s)\n", green("✓"), provider)
+	fmt.Printf("\n  %s %s\n", green("✓"), i18n.T("notify.saved", provider))
 
 	return nil
 }
@@ -168,7 +256,7 @@ func runNotificationConfig() error {
 func notEmpty(field string) func(string) error {
 	return func(s string) error {
 		if strings.TrimSpace(s) == "" {
-			return fmt.Errorf("%s cannot be empty", field)
+			return fmt.Errorf(i18n.T("notify.field_required"), field)
 		}
 		return nil
 	}

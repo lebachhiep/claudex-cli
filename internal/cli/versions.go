@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/lebachhiep/claudex-cli/internal/auth"
+	"github.com/lebachhiep/claudex-cli/internal/i18n"
 	"github.com/lebachhiep/claudex-cli/internal/rules"
 )
 
@@ -38,7 +39,7 @@ func listVersions() error {
 	}
 
 	if len(versions) == 0 {
-		fmt.Println("\n  No versions available.\n")
+		fmt.Printf("\n  %s\n\n", i18n.T("versions.none"))
 		return nil
 	}
 
@@ -51,8 +52,8 @@ func listVersions() error {
 
 	green := color.New(color.FgGreen).SprintFunc()
 
-	fmt.Printf("\n  Available versions:\n\n")
-	fmt.Printf("    %-14s %-10s %-12s %s\n", "VERSION", "SIZE", "DATE", "CHANGELOG")
+	fmt.Printf("\n  %s\n\n", i18n.T("versions.header"))
+	fmt.Printf("    %-14s %-10s %-12s %s\n", i18n.T("versions.col_ver"), i18n.T("versions.col_size"), i18n.T("versions.col_date"), i18n.T("versions.col_log"))
 	fmt.Printf("    %-14s %-10s %-12s %s\n", "-------", "----", "----", "---------")
 
 	// Print oldest first, newest last
@@ -87,13 +88,13 @@ func listVersions() error {
 func showCurrentVersion() error {
 	lock, err := rules.ReadLock(".")
 	if err != nil {
-		return fmt.Errorf("no rules installed in this project. Run `claudex init` first")
+		return fmt.Errorf(i18n.T("versions.no_rules"))
 	}
 
 	green := color.New(color.FgGreen).SprintFunc()
-	fmt.Printf("\n  %s Current version: %s\n", green("✓"), lock.Version)
-	fmt.Printf("    Plan:      %s\n", lock.Plan)
-	fmt.Printf("    Installed: %s\n", lock.InstalledAt.Format("2006-01-02 15:04"))
-	fmt.Printf("    CLI:       %s\n\n", lock.CLIVersion)
+	fmt.Printf("\n  %s %s\n", green("✓"), i18n.T("versions.current", lock.Version))
+	fmt.Printf("    %s\n", i18n.T("versions.plan", lock.Plan))
+	fmt.Printf("    %s\n", i18n.T("versions.installed", lock.InstalledAt.Format("2006-01-02 15:04")))
+	fmt.Printf("    %s\n\n", i18n.T("versions.cli", lock.CLIVersion))
 	return nil
 }

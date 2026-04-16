@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/lebachhiep/claudex-cli/internal/auth"
+	"github.com/lebachhiep/claudex-cli/internal/i18n"
 	"github.com/lebachhiep/claudex-cli/internal/notification"
 	"github.com/lebachhiep/claudex-cli/internal/projects"
 	"github.com/lebachhiep/claudex-cli/internal/rules"
@@ -56,7 +57,7 @@ func newInitCmd(cliVersion string) *cobra.Command {
 			green := color.New(color.FgGreen).SprintFunc()
 
 			if result.UpToDate && !force {
-				fmt.Printf("\n  %s Already on latest version (%s)\n\n", green("✓"), lock.Version)
+				fmt.Printf("\n  %s %s\n\n", green("✓"), i18n.T("init.already_latest", lock.Version))
 				return nil
 			}
 
@@ -81,23 +82,38 @@ func newInitCmd(cliVersion string) *cobra.Command {
 			// Sync global config to project
 			yellow := color.New(color.FgYellow).SprintFunc()
 			if err := rules.SyncCodingLevel(cfg.ConfigFile, dir); err != nil {
-				fmt.Printf("  %s Coding level sync: %s\n", yellow("!"), err)
+				fmt.Printf("  %s %s\n", yellow("!"), i18n.T("init.coding_sync", err))
 			}
 			globalCfg, _ := notification.LoadGlobalConfig(cfg.ConfigFile)
+			if globalCfg != nil && globalCfg.CodingLevel != -1 {
+				if err := notification.SyncCodingLevelEnvToPath(globalCfg.CodingLevel, dir); err != nil {
+					fmt.Printf("  %s %s\n", yellow("!"), i18n.T("init.coding_env_sync", err))
+				}
+			}
 			if globalCfg != nil && globalCfg.HasNotification() {
-				if err := notification.SyncToPath(globalCfg.Notification, dir); err != nil {
-					fmt.Printf("  %s Notification sync: %s\n", yellow("!"), err)
+				if err := notification.SyncToPath(globalCfg.Notification, globalCfg.EnableNotify, dir); err != nil {
+					fmt.Printf("  %s %s\n", yellow("!"), i18n.T("init.notify_sync", err))
+				}
+			}
+			if globalCfg != nil && globalCfg.HasContext7() {
+				if err := notification.SyncContext7ToPath(globalCfg.Context7, dir); err != nil {
+					fmt.Printf("  %s %s\n", yellow("!"), i18n.T("init.context7_sync", err))
+				}
+			}
+			if globalCfg != nil && globalCfg.Language != "" {
+				if err := notification.SyncLanguageToPath(globalCfg.Language, dir); err != nil {
+					fmt.Printf("  %s Language sync: %s\n", yellow("!"), err)
 				}
 			}
 
 			// Output
 			if mode == rules.ModeUpdate && lockErr == nil {
-				fmt.Printf("\n  %s Updated %s → %s\n", green("✓"), lock.Version, result.Version)
+				fmt.Printf("\n  %s %s\n", green("✓"), i18n.T("init.updated", lock.Version, result.Version))
 			} else {
-				fmt.Printf("\n  %s Installed rules %s (%d KB)\n", green("✓"), result.Version, result.SizeBytes/1024)
+				fmt.Printf("\n  %s %s\n", green("✓"), i18n.T("init.installed", result.Version, result.SizeBytes/1024))
 			}
-			fmt.Printf("      %d skills, %d agents, %d rules\n", stats.SkillCount, stats.AgentCount, stats.RuleCount)
-			fmt.Printf("  %s Ready! Open Claude Code and use /skill-name to get started.\n\n", green("✓"))
+			fmt.Printf("  %s\n", i18n.T("init.stats", stats.SkillCount, stats.AgentCount, stats.RuleCount))
+			fmt.Printf("  %s %s\n\n", green("✓"), i18n.T("init.ready"))
 			return nil
 		},
 	}

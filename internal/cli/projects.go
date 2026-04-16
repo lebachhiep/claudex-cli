@@ -9,6 +9,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 
+	"github.com/lebachhiep/claudex-cli/internal/i18n"
 	"github.com/lebachhiep/claudex-cli/internal/notification"
 	"github.com/lebachhiep/claudex-cli/internal/projects"
 	"github.com/lebachhiep/claudex-cli/internal/rules"
@@ -46,7 +47,7 @@ func runProjectsList() error {
 
 	projectList := store.List()
 	if len(projectList) == 0 {
-		fmt.Printf("\n  %s No tracked projects. Run 'claudex init' in a project first.\n\n", yellow("!"))
+		fmt.Printf("\n  %s %s\n\n", yellow("!"), i18n.T("projects.none"))
 		return nil
 	}
 
@@ -62,14 +63,14 @@ func runProjectsList() error {
 	}
 
 	// Print table
-	fmt.Printf("\n  %s Tracked Projects\n\n", cyan("■"))
-	fmt.Printf("  %-4s %-45s %-10s %-12s %s\n", "#", "Path", "Version", "Installed", "Updated")
+	fmt.Printf("\n  %s %s\n\n", cyan("■"), i18n.T("projects.title"))
+	fmt.Printf("  %-4s %-45s %-10s %-12s %s\n", "#", i18n.T("projects.col_path"), i18n.T("projects.col_version"), i18n.T("projects.col_installed"), i18n.T("projects.col_updated"))
 	fmt.Printf("  %s\n", strings.Repeat("─", 95))
 
 	for i, p := range projectList {
 		label := p.Path
 		if i == currentIdx {
-			label += " " + green("(current)")
+			label += " " + green(i18n.T("projects.current"))
 		}
 		fmt.Printf("  %-4d %-45s %-10s %-12s %s\n",
 			i+1,
@@ -81,9 +82,9 @@ func runProjectsList() error {
 	}
 
 	if cleaned > 0 {
-		fmt.Printf("\n  %s Removed %d stale project(s)\n", yellow("!"), cleaned)
+		fmt.Printf("\n  %s %s\n", yellow("!"), i18n.T("projects.removed_stale", cleaned))
 	}
-	fmt.Printf("\n  %s %d project(s) tracked\n", green("✓"), len(projectList))
+	fmt.Printf("\n  %s %s\n", green("✓"), i18n.T("projects.count", len(projectList)))
 
 	// Show global config summary
 	globalCfg, err := notification.LoadGlobalConfig(cfg.ConfigFile)
@@ -91,12 +92,26 @@ func runProjectsList() error {
 		globalCfg = &notification.GlobalConfig{CodingLevel: -1}
 	}
 
-	fmt.Printf("\n  %s Global Config\n", cyan("■"))
+	fmt.Printf("\n  %s %s\n", cyan("■"), i18n.T("projects.global_config"))
 	fmt.Printf("    Coding Level : %s\n", notification.CodingLevelName(globalCfg.CodingLevel))
 	if globalCfg.HasNotification() {
-		fmt.Printf("    Notification : %s (configured)\n", globalCfg.Notification.Provider)
+		enableLabel := green(i18n.T("notify.enabled_on"))
+		if !globalCfg.EnableNotify {
+			enableLabel = yellow(i18n.T("notify.enabled_off"))
+		}
+		fmt.Printf("    Notification : %s\n", i18n.T("projects.notify_on", globalCfg.Notification.Provider, enableLabel))
 	} else {
-		fmt.Printf("    Notification : %s\n", yellow("not configured"))
+		fmt.Printf("    Notification : %s\n", yellow(i18n.T("notify.not_configured")))
+	}
+	if globalCfg.HasContext7() {
+		fmt.Printf("    Context7     : %s\n", green(i18n.T("projects.context7_ok")))
+	} else {
+		fmt.Printf("    Context7     : %s\n", yellow(i18n.T("projects.context7_none")))
+	}
+	if globalCfg.Language != "" {
+		fmt.Printf("    Language     : %s\n", globalCfg.Language)
+	} else {
+		fmt.Printf("    Language     : %s\n", yellow(i18n.T("projects.context7_none")))
 	}
 	fmt.Println()
 
@@ -134,7 +149,7 @@ func promptSyncAfterConfig() error {
 		}
 	}
 
-	fmt.Printf("\n  %d project(s) tracked.\n", len(store.List()))
+	fmt.Printf("\n  %s\n", i18n.T("projects.count", len(store.List())))
 	return askSyncProjects(globalCfg, store, currentIdx)
 }
 
@@ -144,16 +159,16 @@ func askSyncProjects(globalCfg *notification.GlobalConfig, store *projects.Store
 
 	var opts []huh.Option[string]
 	if currentIdx >= 0 {
-		opts = append(opts, huh.NewOption("Update current project only", "current"))
+		opts = append(opts, huh.NewOption(i18n.T("projects.sync_current"), "current"))
 	}
 	opts = append(opts,
-		huh.NewOption("Update all projects", "all"),
-		huh.NewOption("Skip", "skip"),
+		huh.NewOption(i18n.T("projects.sync_all"), "all"),
+		huh.NewOption(i18n.T("common.skip"), "skip"),
 	)
 
 	var choice string
 	err := huh.NewSelect[string]().
-		Title("Sync global config to projects?").
+		Title(i18n.T("projects.sync_title")).
 		Options(opts...).
 		Value(&choice).
 		Run()
@@ -181,15 +196,34 @@ func askSyncProjects(globalCfg *notification.GlobalConfig, store *projects.Store
 		hasError := false
 		// Sync notification .env
 		if globalCfg.HasNotification() {
-			if err := notification.SyncToPath(globalCfg.Notification, p.Path); err != nil {
+			if err := notification.SyncToPath(globalCfg.Notification, globalCfg.EnableNotify, p.Path); err != nil {
 				errors = append(errors, fmt.Sprintf("%s: notification: %s", p.Path, err))
 				hasError = true
 			}
 		}
-		// Sync coding level
+		// Sync coding level (.claude-config.json)
 		if globalCfg.CodingLevel != -1 {
 			if err := rules.SyncCodingLevel(cfg.ConfigFile, p.Path); err != nil {
 				errors = append(errors, fmt.Sprintf("%s: coding-level: %s", p.Path, err))
+				hasError = true
+			}
+			// Sync coding level (.env)
+			if err := notification.SyncCodingLevelEnvToPath(globalCfg.CodingLevel, p.Path); err != nil {
+				errors = append(errors, fmt.Sprintf("%s: coding-level-env: %s", p.Path, err))
+				hasError = true
+			}
+		}
+		// Sync context7
+		if globalCfg.HasContext7() {
+			if err := notification.SyncContext7ToPath(globalCfg.Context7, p.Path); err != nil {
+				errors = append(errors, fmt.Sprintf("%s: context7: %s", p.Path, err))
+				hasError = true
+			}
+		}
+		// Sync language
+		if globalCfg.Language != "" {
+			if err := notification.SyncLanguageToPath(globalCfg.Language, p.Path); err != nil {
+				errors = append(errors, fmt.Sprintf("%s: language: %s", p.Path, err))
 				hasError = true
 			}
 		}
@@ -199,7 +233,7 @@ func askSyncProjects(globalCfg *notification.GlobalConfig, store *projects.Store
 	}
 
 	if synced > 0 {
-		fmt.Printf("\n  %s Synced config to %d project(s)\n", green("✓"), synced)
+		fmt.Printf("\n  %s %s\n", green("✓"), i18n.T("projects.synced", synced))
 	}
 	for _, e := range errors {
 		fmt.Printf("  %s %s\n", color.RedString("✗"), e)

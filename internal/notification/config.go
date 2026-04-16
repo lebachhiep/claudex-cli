@@ -30,6 +30,11 @@ type SlackConfig struct {
 	WebhookURL string `json:"webhook_url"`
 }
 
+// Context7Config holds Context7 API credentials.
+type Context7Config struct {
+	APIKey string `json:"api_key"`
+}
+
 // NotificationConfig holds all provider configs and active provider.
 type NotificationConfig struct {
 	Provider string         `json:"provider"`
@@ -42,18 +47,19 @@ type NotificationConfig struct {
 type GlobalConfig struct {
 	Notification NotificationConfig `json:"notification"`
 	CodingLevel  int                `json:"coding_level"`
+	Context7     Context7Config     `json:"context7"`
+	EnableNotify bool               `json:"enable_notify"`
+	Language     string             `json:"language"`
 }
 
 // CodingLevelName returns the display name for a coding level.
 func CodingLevelName(level int) string {
 	names := map[int]string{
 		-1: "Disabled",
-		0:  "ELI5 — explain like I'm 5",
-		1:  "Junior — explain WHY, common mistakes",
-		2:  "Mid-Level — design patterns, system thinking",
-		3:  "Senior — trade-offs, architecture",
-		4:  "Tech Lead — risk, business impact",
-		5:  "God Mode — terse, code only",
+		0:  "Intern — explain all terms, avoid jargon",
+		1:  "Junior — explain patterns first time, suggest best practices",
+		2:  "Mid — only explain complex logic or unclear trade-offs",
+		3:  "Senior+ — terse, focus scalability/security/business impact",
 	}
 	if name, ok := names[level]; ok {
 		return name
@@ -62,8 +68,9 @@ func CodingLevelName(level int) string {
 }
 
 // LoadGlobalConfig reads config.json. Returns empty config if not found.
+// EnableNotify defaults to true for backward compatibility.
 func LoadGlobalConfig(path string) (*GlobalConfig, error) {
-	c := &GlobalConfig{CodingLevel: -1}
+	c := &GlobalConfig{CodingLevel: -1, EnableNotify: true}
 
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -73,10 +80,17 @@ func LoadGlobalConfig(path string) (*GlobalConfig, error) {
 		return nil, fmt.Errorf("read config: %w", err)
 	}
 
+	// Default EnableNotify to true before unmarshal — if JSON has the field it overrides.
+	c.EnableNotify = true
 	if err := json.Unmarshal(data, c); err != nil {
 		return nil, fmt.Errorf("parse config: %w", err)
 	}
 	return c, nil
+}
+
+// HasContext7 returns true if Context7 API key is configured.
+func (c *GlobalConfig) HasContext7() bool {
+	return c.Context7.APIKey != ""
 }
 
 // Save writes config to disk with 0600 permissions.
