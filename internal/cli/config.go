@@ -42,9 +42,8 @@ func newConfigCmd() *cobra.Command {
 
 			switch choice {
 			case "language":
-				if err := runLanguageConfig(); err != nil {
-					return err
-				}
+				// Language is CLI-display only — no sync to projects needed
+				return runLanguageConfig()
 			case "coding-level":
 				if err := runCodingLevelConfig(); err != nil {
 					return err
