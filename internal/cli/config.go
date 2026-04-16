@@ -148,6 +148,27 @@ func runNotificationConfig() error {
 		}
 	}
 
+	// First-time setup: ask enable/disable before provider selection
+	if !globalCfg.HasNotification() {
+		green := color.New(color.FgGreen).SprintFunc()
+		var enable bool
+		if err := huh.NewConfirm().
+			Title(i18n.T("notify.enable_prompt")).
+			Value(&enable).
+			Run(); err != nil {
+			return err
+		}
+		if !enable {
+			globalCfg.EnableNotify = false
+			if err := globalCfg.Save(cfg.ConfigFile); err != nil {
+				return fmt.Errorf("save config: %w", err)
+			}
+			fmt.Printf("\n  %s %s\n\n", green("✓"), i18n.T("notify.disabled_saved"))
+			return nil
+		}
+		globalCfg.EnableNotify = true
+	}
+
 	// Provider setup flow
 	return runProviderSetup(globalCfg)
 }
@@ -176,6 +197,7 @@ func maskValue(s string) string {
 // runProviderSetup handles the interactive provider selection and credential input.
 func runProviderSetup(globalCfg *notification.GlobalConfig) error {
 	green := color.New(color.FgGreen).SprintFunc()
+	yellow := color.New(color.FgYellow).SprintFunc()
 
 	var provider string
 	err := huh.NewSelect[string]().
@@ -184,37 +206,32 @@ func runProviderSetup(globalCfg *notification.GlobalConfig) error {
 			huh.NewOption("Telegram", notification.ProviderTelegram),
 			huh.NewOption("Discord", notification.ProviderDiscord),
 			huh.NewOption("Slack", notification.ProviderSlack),
+			huh.NewOption(i18n.T("notify.back"), "back"),
 		).
 		Value(&provider).
 		Run()
 	if err != nil {
 		return err
 	}
+	if provider == "back" {
+		fmt.Printf("\n  %s %s\n\n", yellow("!"), i18n.T("notify.cancelled"))
+		return nil
+	}
 
 	notiCfg := notification.NotificationConfig{Provider: provider}
 
 	switch provider {
 	case notification.ProviderTelegram:
-		var botToken, chatID string
-		err = huh.NewForm(
-			huh.NewGroup(
-				huh.NewInput().
-					Title(i18n.T("notify.bot_token")).
-					Description(i18n.T("notify.bot_token_desc")).
-					Value(&botToken).
-					Validate(notEmpty(i18n.T("notify.bot_token"))),
-				huh.NewInput().
-					Title(i18n.T("notify.chat_id")).
-					Description(i18n.T("notify.chat_id_desc")).
-					Value(&chatID).
-					Validate(notEmpty(i18n.T("notify.chat_id"))),
-			),
-		).Run()
+		botToken, chatID, err := runTelegramSetup()
 		if err != nil {
 			return err
 		}
-		notiCfg.Telegram.BotToken = strings.TrimSpace(botToken)
-		notiCfg.Telegram.ChatID = strings.TrimSpace(chatID)
+		if botToken == "" || chatID == "" {
+			fmt.Printf("\n  %s %s\n\n", yellow("!"), i18n.T("notify.cancelled"))
+			return nil
+		}
+		notiCfg.Telegram.BotToken = botToken
+		notiCfg.Telegram.ChatID = chatID
 
 	case notification.ProviderDiscord:
 		var webhookURL string
