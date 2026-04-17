@@ -68,6 +68,16 @@ var vi = map[string]string{
 	"versions.installed":  "Cài ngày:  %s",
 	"versions.cli":        "CLI:       %s",
 	"versions.no_rules":   "chưa cài rules. Chạy `claudex init` trước",
+	"versions.opt_current":     "(hiện tại)",
+	"versions.select_title":    "Chọn phiên bản để áp dụng cho dự án",
+	"versions.all_on_target":   "Tất cả dự án đã ở phiên bản %s",
+	"versions.mismatched_title": "Dự án khác phiên bản %s:",
+	"versions.col_current":     "PHIÊN BẢN HIỆN TẠI",
+	"versions.no_lock_short":   "chưa cài",
+	"versions.confirm_title":   "Áp dụng cho %d dự án (đặt về %s)?",
+	"versions.confirm_all":     "Áp dụng tất cả",
+	"versions.confirm_pick":    "Chọn dự án cụ thể",
+	"versions.pick_title":      "Chọn dự án (Space để chọn, Enter để xác nhận)",
 
 	// ── config ──
 	"config.menu_title":     "Bạn muốn cấu hình gì?",

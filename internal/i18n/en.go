@@ -68,6 +68,16 @@ var en = map[string]string{
 	"versions.installed":  "Installed: %s",
 	"versions.cli":        "CLI:       %s",
 	"versions.no_rules":   "no rules installed in this project. Run `claudex init` first",
+	"versions.opt_current":     "(current)",
+	"versions.select_title":    "Select a version to apply to projects",
+	"versions.all_on_target":   "All projects already on version %s",
+	"versions.mismatched_title": "Projects not on version %s:",
+	"versions.col_current":     "CURRENT VERSION",
+	"versions.no_lock_short":   "not installed",
+	"versions.confirm_title":   "Apply to %d project(s) (set to %s)?",
+	"versions.confirm_all":     "Apply to all",
+	"versions.confirm_pick":    "Pick projects",
+	"versions.pick_title":      "Select projects (Space to toggle, Enter to confirm)",
 
 	// ── config ──
 	"config.menu_title":     "What would you like to configure?",

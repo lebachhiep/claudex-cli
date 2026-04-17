@@ -56,7 +56,7 @@ func NewRootCmd(version, commit, date string) *cobra.Command {
 		newLoginCmd(),
 		newInitCmd(version),
 		newUpdateCmd(version),
-		newVersionsCmd(),
+		newVersionsCmd(version),
 		newStatusCmd(),
 		newLogoutCmd(),
 		newConfigCmd(),
