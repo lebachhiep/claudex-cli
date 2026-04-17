@@ -276,19 +276,28 @@ func shouldSkipOverwrite(cleanName, targetDir string) bool {
 }
 
 // trackFile increments stats counters based on file path.
+// Counts only top-level entries:
+//   - Skills: .claude/skills/<slug>/SKILL.md
+//   - Agents: .claude/agents/<slug>.md (single file, no nesting)
+//   - Rules:  .claude/rules/<slug>.md (excludes per-skill nested rules/)
 func trackFile(name string, stats *FileStats) {
-	if strings.HasSuffix(name, "CLAUDE.md") {
+	slug := filepath.ToSlash(name)
+
+	if slug == "CLAUDE.md" || strings.HasSuffix(slug, "/CLAUDE.md") {
 		stats.HasClaudeMD = true
 		return
 	}
 
-	slug := filepath.ToSlash(name)
 	switch {
-	case strings.Contains(slug, "skills/") && strings.HasSuffix(name, "SKILL.md"):
+	case strings.HasPrefix(slug, ".claude/skills/") && strings.HasSuffix(slug, "/SKILL.md"):
 		stats.SkillCount++
-	case strings.Contains(slug, "agents/") && strings.HasSuffix(name, "AGENT.md"):
-		stats.AgentCount++
-	case strings.Contains(slug, "rules/") && strings.HasSuffix(name, ".md"):
-		stats.RuleCount++
+	case strings.HasPrefix(slug, ".claude/agents/") && strings.HasSuffix(slug, ".md"):
+		if rest := strings.TrimPrefix(slug, ".claude/agents/"); !strings.Contains(rest, "/") {
+			stats.AgentCount++
+		}
+	case strings.HasPrefix(slug, ".claude/rules/") && strings.HasSuffix(slug, ".md"):
+		if rest := strings.TrimPrefix(slug, ".claude/rules/"); !strings.Contains(rest, "/") {
+			stats.RuleCount++
+		}
 	}
 }
