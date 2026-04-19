@@ -49,25 +49,32 @@ func Login(client *api.Client, licenseKey string, cfg *config.Config) (*AuthData
 }
 
 // Logout unbinds this machine from the license and removes local auth state.
-func Logout(client *api.Client, cfg *config.Config) (*api.LogoutResponse, error) {
+// Returns localOnly=true when server-side session was already gone (license/subscription
+// removed, expired, deactivated, or device no longer registered) — in that case local
+// auth is still wiped so the user isn't stuck in a zombie state.
+func Logout(client *api.Client, cfg *config.Config) (*api.LogoutResponse, bool, error) {
 	authData, err := LoadAuth(cfg.AuthFile)
 	if err != nil {
-		return nil, fmt.Errorf("not logged in")
+		return nil, false, fmt.Errorf("not logged in")
 	}
 
 	resp, err := client.Logout(&api.LogoutRequest{
 		Token:     authData.Token,
 		MachineID: authData.MachineID,
 	})
+	localOnly := false
 	if err != nil {
-		return nil, err
+		apiErr, ok := err.(*api.APIError)
+		if !ok || !shouldClearAuth(apiErr) {
+			return nil, false, err
+		}
+		resp, localOnly = nil, true
 	}
 
 	if err := DeleteAuth(cfg.AuthFile); err != nil {
-		return nil, err
+		return nil, false, err
 	}
-
-	return resp, nil
+	return resp, localOnly, nil
 }
 
 // EnsureAuth loads auth state and verifies the token with the API.

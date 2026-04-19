@@ -13,8 +13,9 @@ var en = map[string]string{
 	"login.err_network":     "Cannot reach API server. Check your internet connection",
 
 	// ── logout ──
-	"logout.success":  "Logged out",
-	"logout.unbound":  "Device unbound (%d/%d devices remaining)",
+	"logout.success":    "Logged out",
+	"logout.unbound":    "Device unbound (%d/%d devices remaining)",
+	"logout.local_only": "Local session cleared (server session already gone)",
 
 	// ── status ──
 	"status.license":       "License:    %s (active)",

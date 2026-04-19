@@ -13,8 +13,9 @@ var vi = map[string]string{
 	"login.err_network":     "Không thể kết nối API server. Kiểm tra kết nối internet",
 
 	// ── logout ──
-	"logout.success":  "Đã đăng xuất",
-	"logout.unbound":  "Đã hủy liên kết thiết bị (%d/%d thiết bị còn lại)",
+	"logout.success":    "Đã đăng xuất",
+	"logout.unbound":    "Đã hủy liên kết thiết bị (%d/%d thiết bị còn lại)",
+	"logout.local_only": "Đã xóa session local (session server đã hết hạn hoặc bị gỡ)",
 
 	// ── status ──
 	"status.license":       "License:    %s (đang hoạt động)",
